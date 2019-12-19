@@ -1,0 +1,108 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.UI;
+
+public class Game : MonoBehaviour
+{
+    public GameObject PanelGameReady;
+    public GameObject PanelGameIng;
+    public GameObject PanelGameEnd;
+
+    public PipelineManger pipelinemanger;
+
+    public Player player;
+
+    public Text uiScore;
+    public Text uiScore2;
+
+    public int score;
+
+    public int Score
+    {
+        get { return score; }
+        set
+        {
+            this.score = value;
+            this.uiScore.text = this.score.ToString();
+            this.uiScore2.text = this.score.ToString();
+        }
+    }
+
+    public enum GAME_STATUS  //枚举游戏三种状态
+    {
+        Game_Ready,
+        Game_Ing,
+        Game_End
+    }
+
+    private GAME_STATUS status;
+
+    private GAME_STATUS Status
+    {
+        get
+        {
+            return status;
+        }
+        set
+        {
+            status = value;
+            UpdateUI();
+        }
+    }
+    void Start()
+    {
+        this.PanelGameReady.SetActive(true);
+        //player.rigidbodyBird.Sleep();
+        Status = GAME_STATUS.Game_Ready;
+        this.player.OnDeath += Player_OnDeath;
+    }
+
+    void OnPlayerScore(int score)
+    {
+        this.Score += score;
+    }
+
+    private void Player_OnDeath()
+    {
+        this.Status = GAME_STATUS.Game_End;
+        this.pipelinemanger.End();
+        //UpdateUI();
+    }
+
+    void Update()
+    {
+        
+    }
+
+
+    public void StartGame()
+    {
+        this.Status = GAME_STATUS.Game_Ing; //让该值为游戏中，然后调用方法设置下一个游戏状态的激活性
+                                            //UpdateUI();
+        Debug.LogFormat("StartGame:{0}", this.status);
+        pipelinemanger.StartRun();
+        Debug.Log("点击了开始游戏的按钮！");
+
+        player.Fly();
+        
+
+    }
+
+    public void RePlay()
+    {
+        Status = GAME_STATUS.Game_Ready;
+        //UpdateUI();
+
+        this.pipelinemanger.Init();//角色死亡后，钢管的初始化
+        this.player.Init();//角色死亡后 点击在玩一次的初始化
+    }
+
+    //游戏面板的切换，由开始切换到游戏中，再切换到游戏结束
+    public void UpdateUI()
+    {
+        this.PanelGameReady.SetActive(this.Status == GAME_STATUS.Game_Ready);
+        this.PanelGameIng.SetActive(this.Status == GAME_STATUS.Game_Ing);
+        this.PanelGameEnd.SetActive(this.Status == GAME_STATUS.Game_End);
+    }
+}
