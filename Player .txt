@@ -1,0 +1,106 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.Events;
+
+public class Player : MonoBehaviour
+{
+    public Rigidbody2D rigidbodyBird;
+
+    public float force;
+
+    private Vector3 initPos;//每次小鸟死亡后，点击重新开始后，小鸟再次出现的位置
+
+    public Animator Ani;
+
+    bool dieth = false;
+
+    public delegate void DeathNotify(); //定义一个死亡通知委托
+
+    public event DeathNotify OnDeath;  //定义一个死亡通知的事件
+
+    public UnityAction<int> OnScore;//Unity自带的通知事件
+
+    void Start()
+    {
+        //this.Ani = this.GetComponent<Animator>();  已经在Unity里面自我拖拽绑定了
+        //rigidbodyBird.gravityScale=0f;//物体受到的重力为0
+        
+        this.Idle();
+
+        initPos = this.transform.position;
+    }
+
+    public void Init()
+    {
+        this.transform.position = initPos;
+        Idle();
+        dieth = false;
+    }
+
+    void Update()
+    {
+        if (dieth)
+            return;  //阻断后面的程序进行
+
+        if (Input.GetKeyDown(KeyCode.Space))
+        //if(Input.GetMouseButtonDown(0))
+        {
+            rigidbodyBird.velocity = Vector2.zero; //该刚体的线性速度
+            rigidbodyBird.AddForce(new Vector2(0,force),ForceMode2D.Force);
+           // Debug.Log("keyDownSpace!");
+        }
+    }
+
+    public void Idle()
+    {
+        //this.rigidbodyBird.Sleep();
+        // Debug.Log(rigidbodyBird.IsSleeping());//判断刚体是否休眠状态
+        this.rigidbodyBird.simulated = false;//是否模拟物理引擎
+        Ani.SetTrigger("Idle");
+    }
+    public void Fly()
+    {
+       // this.rigidbodyBird.WakeUp();
+        this.rigidbodyBird.simulated = true;
+        //rigidbodyBird.gravityScale = 1.2f;  //设置物体重力为1.2
+        Ani.SetTrigger("Fly");
+    }
+
+    private void OnCollisionStay2D(Collision2D collision)
+    {
+        //Debug.Log("OnCollisionStay2D:"+collision.gameObject.name+this.gameObject.name+Time.time);
+        Die();
+    }
+
+    private void OnTriggerStay2D(Collider2D collision)
+    {
+        // Debug.Log("OnTriggerStay2D:" + collision.gameObject.name+ " " + this.gameObject.name + " " + Time.time);
+        if (collision.gameObject.name.Equals("ScoreArea"))
+        {
+
+        }
+        else
+            this.Die();
+    }
+    void OnTriggerExit2D(Collider2D collision)
+    {
+        Debug.Log("OnTriggerExit2D : " + collision.gameObject.name + " : " + gameObject.name + " : " + Time.time);
+        if (collision.gameObject.name.Equals("ScoreArea"))
+        {
+            if (this.OnScore != null)
+                this.OnScore(1);
+        }
+    }
+
+    void Die()
+    {
+        this.dieth = true;
+        //Idle();
+
+        if (OnDeath != null)
+        {
+            this.OnDeath();
+        }
+    }
+}
