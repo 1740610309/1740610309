@@ -1,0 +1,35 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class Pipeline : MonoBehaviour
+{
+    public float speed;
+    public float maxRange;
+    public float minRange;
+
+    float t=0;  //用于计时 下一轮管道初始化
+    void Start()
+    {
+        Init();
+    }
+
+    public void Init()
+    {
+        float y = Random.Range(minRange, maxRange);
+        this.transform.localPosition = new Vector3(this.transform.localPosition.x, y, this.transform.localPosition.z);
+        //Destroy(this.gameObject, 5f);
+    }
+
+    void Update()
+    {
+        this.transform.Translate(new Vector3(speed, 0, 0) * Time.deltaTime);
+        //自定义计时器，每6秒重置一次 
+        t += Time.deltaTime;
+        if (t>6f)
+        {
+            t = 0;
+            Init();
+        }
+    }
+}
